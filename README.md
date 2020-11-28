@@ -13,6 +13,7 @@
 [東風破](https://github.com/rime/plum) 安裝口令： `bash rime-install baopaau/rime-iac-mps`
 
 ## 介紹
+
 [方案介紹](https://zh.m.wikiversity.org/wiki/原創老國音拼音方案/iac轉寫)
 
 [iac老國音輸入法](https://zhuanlan.zhihu.com/p/21674298)
