@@ -1,0 +1,297 @@
+# Rime schema
+# encoding: utf-8
+
+schema:
+  schema_id: iac_mps
+  name: iac新國音
+  version: "0.1"
+  author:
+    - 抱豹 <baopaau@gmail.com>
+  description: |
+    一個現代漢語拼音方案，基於iac舊國音字母轉寫法（提出者：iacobvs）
+    
+    [方案介紹](https://zh.m.wikiversity.org/wiki/原創老國音拼音方案/iac轉寫)
+    [iac老國音輸入法](https://zhuanlan.zhihu.com/p/21674298)
+
+    「iac轉寫與注音符號是一一對應的。」
+    
+    聲調：
+    ・數字鍵４５６７８對應：陰陽上去輕（ˉˊˇˋ˙）
+    ・另設ｖ單鍵錄入聲調
+
+    空格鍵輸出上屏碼（注音符號）
+
+  dependencies:
+    - terra_pinyin
+
+switches:
+  - name: ascii_mode
+    states: [ 中文, ASCII ]
+    reset: 0
+  - name: full_shape
+    states: [ 半寬, 全寬 ]
+  - options: [ noop, simplification, trad_tw ]
+    states: [ 原形, 陆简, 臺正 ]
+    reset: 0
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+  - name: emoji_suggestion
+    states: [ ＊ , Emoji ]
+    reset: 1
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - table_translator@custom_phrase
+    - reverse_lookup_translator
+    - script_translator
+  filters:
+    - simplifier@trad_tw
+    - simplifier
+    - simplifier@emoji_suggestion
+    - uniquifier
+
+speller:
+  alphabet: zyxwvutsrqponmlkjihgfedcba45678
+  delimiter: " '"
+  algebra:
+    - erase/^xx$/
+    - xform/\<m(\d)$/mu$1/  # 呣
+    - xform/\<r5$/er5/  # 〜兒
+
+    # 不分uo/o
+    - derive/^([bpmf])o/$1uo/
+    - derive/^([dtnlgkhzcsr]h?)uo/$1o/ # lo(咯)
+
+    - xform/iu/iou/
+    - xform/ui/uei/
+    - xform/ong/ung/
+    - xform/\<yi?/i/
+    - xform/\<wu?/u/
+    - xform/iu/v/
+    - xform/\<([jqx])u/$1v/
+    - xform/([iuv])n/$1en/
+    - xform/\<zhi?/Z/
+    - xform/\<chi?/C/
+    - xform/\<shi?/S/
+    - xform/\<([zcsr])i/$1/
+    - xform/ai/A/
+    - xform/ei/I/
+    - xform/ao/O/
+    - xform/ou/U/
+    - xform/ang/K/
+    - xform/eng/G/
+    - xform/an/M/
+    - xform/en/N/
+    - xform/er/R/
+    - xform/eh/E/
+    - xform/([iv])e/$1E/
+    - xlit|bpmfdtnlgkhjqxZCSrzcsiuvaoeEAIOUMNKGR12345|ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦˉˊˇˋ˙|
+
+    # 聲母
+    - xlit|ㄅㄆㄇㄈㄪ|bpmfv|
+    - xlit|ㄉㄊㄋㄌ|dtnl|
+    - xlit|ㄍㄎㄏ|gkh|
+    - xform|ㄫ|ng|
+    - xlit|ㄐㄑㄒ|jqx|
+    - xform|ㄬ|nj|
+    - xform|ㄓ|zr|
+    - xform|ㄔ|cr|
+    - xform|ㄕ|sr|
+    - xform|ㄖ|r|
+    - xform|ㄗ|z|
+    - xform|ㄘ|c|
+    - xform|ㄙ|s|
+    # 介母
+    - xlit|ㄧㄨㄩ|iuy|
+    # 韻母
+    - xform|ㄚ|a|
+    - xform|ㄛ|o|
+    - xform|ㄜ|eo|
+    - xform|ㄝ|e|
+    - xform|ㄞ|ai|
+    - xform|ㄟ|ei|
+    - xform|ㄠ|au|
+    - xform|ㄡ|ou|
+    - xform|ㄢ|an|
+    - xform|ㄣ|en|
+    - xform|ㄤ|ang|
+    - xform|ㄥ|eng|
+    - xform|ㄦ|er|
+    # 聲調
+    - xlit|ˉˊˇˋ˙・|45678q|
+
+    # 變式
+    - derive/([iuy])e(ng?)/$1$2/
+    - derive/iou/iu/
+    - derive/uei/ui/
+    - derive/^([zcs]r?|r)([45678q])$/$1w$2/
+    - derive/eo([45678q])$/e$1/
+    - derive/([zcs]r|r)e([45678q])$/$1ie$2/
+
+    # 簡拼
+    - derive/[45678]$//
+    - abbrev/^([a-z]).+$/$1/
+    - abbrev/^([zcs]r|n[gj]).+$/$1/
+
+    # 聲調
+    - derive/4$/v/
+    - derive/5$/vv/
+    - derive/6$/vvv/
+    - derive/7$/vvvv/
+    - derive/8$/vvvvv/
+   
+translator:
+  dictionary: terra_pinyin
+  prism: iac_mps
+  spelling_hints: 7  # ～字以內候選標註完整帶調拼音
+  comment_format: &comment
+    - erase/^xx$/
+    - xform/\<m(\d)$/mu$1/  # 呣
+    - xform/\<r5$/er5/  # 〜兒
+    - xform/iu/iou/
+    - xform/ui/uei/
+    - xform/ong/ung/
+    - xform/\<yi?/i/
+    - xform/\<wu?/u/
+    - xform/iu/v/
+    - xform/\<([jqx])u/$1v/
+    - xform/([iuv])n/$1en/
+    - xform/\<zhi?/Z/
+    - xform/\<chi?/C/
+    - xform/\<shi?/S/
+    - xform/\<([zcsr])i/$1/
+    - xform/ai/A/
+    - xform/ei/I/
+    - xform/ao/O/
+    - xform/ou/U/
+    - xform/ang/K/
+    - xform/eng/G/
+    - xform/an/M/
+    - xform/en/N/
+    - xform/er/R/
+    - xform/eh/E/
+    - xform/([iv])e/$1E/
+    - xlit|bpmfdtnlgkhjqxZCSrzcsiuvaoeEAIOUMNKGR12345|ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦˉˊˇˋ˙|
+
+  preedit_format:
+    # 變式
+    - xform/([iuy])(ng?)/$1e$2/
+    - xform/iu/iou/
+    - xform/ui/uei/
+    - xform/([^iuy])e([45678q]?|v*)\>/$1eo$2/
+    - xform/\<([zcs]r|r)ie([45678q]?|v*)\>/$1e$2/
+
+    # 聲母
+    - xform|\<ng|ㄫ|
+    - xform|\<nj|ㄬ|
+    - xform|\<zr|ㄓ|
+    - xform|\<cr|ㄔ|
+    - xform|\<sr|ㄕ|
+    - xform|\<b|ㄅ|
+    - xform|\<p|ㄆ|
+    - xform|\<m|ㄇ|
+    - xform|\<f|ㄈ|
+    - xform|\<v|ㄪ|
+    - xform|\<d|ㄉ|
+    - xform|\<t|ㄊ|
+    - xform|\<n|ㄋ|
+    - xform|\<l|ㄌ|
+    - xform|\<g|ㄍ|
+    - xform|\<k|ㄎ|
+    - xform|\<h|ㄏ|
+    - xform|\<j|ㄐ|
+    - xform|\<q|ㄑ|
+    - xform|\<x|ㄒ|
+    - xform|\<r|ㄖ|
+    - xform|\<z|ㄗ|
+    - xform|\<c|ㄘ|
+    - xform|\<s|ㄙ|
+    # 韻母
+    - xform|ang|ㄤ|
+    - xform|eng|ㄥ|
+    - xform|ai|ㄞ|
+    - xform|ei|ㄟ|
+    - xform|au|ㄠ|
+    - xform|ou|ㄡ|
+    - xform|an|ㄢ|
+    - xform|en|ㄣ|
+    - xform|er|ㄦ|
+    - xform|eo|ㄜ|
+    - xform|a|ㄚ|
+    - xform|o|ㄛ|
+    - xform|e|ㄝ|
+    - xform|w|ㄭ|
+    # 介母
+    - xlit|iuy|ㄧㄨㄩ|
+
+    # 聲調
+    - xlit|45678q|ˉˊˇˋ˙・|
+    - xform/vvvvv/˙/
+    - xform/vvvv/ˋ/
+    - xform/vvv/ˇ/
+    - xform/vv/ˊ/
+    - xform/v/ˉ/
+
+custom_phrase:
+  dictionary: ""
+  user_dict: custom_phrase
+  db_class: stabledb
+  enable_completion: false
+  enable_sentence: false
+  initial_quality: 1
+
+reverse_lookup:
+  overwrite_comment: true
+  dictionary: terra_pinyin
+  prism: terra_pinyin
+  prefix: "v"
+  suffix: "'"
+  tips: 〔漢語拼音〕
+  comment_format: *comment
+    
+variants_hk:
+  option_name: variants_hk
+  opencc_config: t2hkf.json
+
+trad_tw:
+  option_name: trad_tw
+  opencc_config: t2tw.json
+
+shin_jp:
+  option_name: shin_jp
+  opencc_config: t2jp.json
+
+emoji_suggestion:
+  opencc_config: emoji.json
+  option_name: emoji_suggestion
+  tips: all
+
+punctuator:
+  import_preset: default
+
+key_binder:
+  import_preset: default
+  bindings:
+    - { when: has_menu, accept: space, send: Shift+Return }
+  
+recognizer:
+  import_preset: default
+  patterns:
+    punct: "^/.*$"
+    reverse_lookup: "^v.*$"
